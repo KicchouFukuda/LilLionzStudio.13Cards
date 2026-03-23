@@ -81,6 +81,12 @@
       color: #e74c3c;
     }
 
+    .card.selected {
+      transform: translateY(-15px); /* 往上浮起 */
+      border: 2px solid #3498db;   /* 藍色邊框 */
+      box-shadow: 0 5px 15px rgba(52, 152, 219, 0.5);
+    }
+
     /* 手牌待選區 */
     .hand-area {
       display: flex;
@@ -133,23 +139,23 @@
 
   <div class="board">
     <div class="row" id="top-row">
-      <div class="slot" onclick="returnCard(this)">頭墩</div>
-      <div class="slot" onclick="returnCard(this)">頭墩</div>
-      <div class="slot" onclick="returnCard(this)">頭墩</div>
+      <div class="slot" onclick="handleSlotClick(this)">頭墩</div>
+      <div class="slot" onclick="handleSlotClick(this)">頭墩</div>
+      <div class="slot" onclick="handleSlotClick(this)">頭墩</div>
     </div>
     <div class="row" id="mid-row">
-      <div class="slot" onclick="returnCard(this)">中墩</div>
-      <div class="slot" onclick="returnCard(this)">中墩</div>
-      <div class="slot" onclick="returnCard(this)">中墩</div>
-      <div class="slot" onclick="returnCard(this)">中墩</div>
-      <div class="slot" onclick="returnCard(this)">中墩</div>
+      <div class="slot" onclick="handleSlotClick(this)">中墩</div>
+      <div class="slot" onclick="handleSlotClick(this)">中墩</div>
+      <div class="slot" onclick="handleSlotClick(this)">中墩</div>
+      <div class="slot" onclick="handleSlotClick(this)">中墩</div>
+      <div class="slot" onclick="handleSlotClick(this)">中墩</div>
     </div>
     <div class="row" id="btm-row">
-      <div class="slot" onclick="returnCard(this)">尾墩</div>
-      <div class="slot" onclick="returnCard(this)">尾墩</div>
-      <div class="slot" onclick="returnCard(this)">尾墩</div>
-      <div class="slot" onclick="returnCard(this)">尾墩</div>
-      <div class="slot" onclick="returnCard(this)">尾墩</div>
+      <div class="slot" onclick="handleSlotClick(this)">尾墩</div>
+      <div class="slot" onclick="handleSlotClick(this)">尾墩</div>
+      <div class="slot" onclick="handleSlotClick(this)">尾墩</div>
+      <div class="slot" onclick="handleSlotClick(this)">尾墩</div>
+      <div class="slot" onclick="handleSlotClick(this)">尾墩</div>
     </div>
   </div>
 
@@ -162,6 +168,9 @@
     const GAS_URL = "https://script.google.com/macros/s/AKfycbx8yw4qbP6r91ugCf5qAz5NdpW0tJgPDvDLkdyCClxWmn1qOCy422Fr2M3ccH_0paff/exec";
     const LIFF_ID = "2009545022-2sIcehrG";
     const demoCards = ["♠A", "♥K", "♣Q", "♦J", "♠10", "♥9", "♣8", "♦7", "♠6", "♥5", "♣4", "♦3", "♠2"];
+
+    let selectedCardData = null;
+    let selectedCardEl = null;
 
     async function main() {
       const info = document.getElementById('player-info');
@@ -222,10 +231,68 @@
         div.innerText = isJoker ? "🃏" : card; 
         
         div.id = "h-card-" + index; // 唯一ID
-        div.onclick = () => selectCard(div, card, isRed); // 點擊時傳入原始值 (如 Joker_Red)
+        div.onclick = () => selectCardFromHand(div, card, isRed); // 點擊時傳入原始值 (如 Joker_Red)
         handDiv.appendChild(div);
       });
     }
+
+    // --- 動作 1：點擊手牌區的牌 ---
+	function selectCardFromHand(cardEl, val, isRed) {
+	// 如果點擊的是已經選中的牌，就取消選取
+	if (selectedCardEl === cardEl) {
+		cancelSelection();
+		return;
+	}
+	
+	// 先清除前一個選取狀態
+	if (selectedCardEl) {
+		selectedCardEl.classList.remove('selected');
+	}
+	
+	// 設定新的選取狀態
+	selectedCardEl = cardEl;
+	selectedCardData = { val, isRed };
+	cardEl.classList.add('selected');
+	
+	console.log("已選取:", val);
+	}
+	
+	// 取消選取的輔助函式
+	function cancelSelection() {
+	if (selectedCardEl) {
+		selectedCardEl.classList.remove('selected');
+	}
+	selectedCardEl = null;
+	selectedCardData = null;
+	}
+	
+	// --- 動作 2：點擊理牌區的格子 (Slot) ---
+	function handleSlotClick(slot) {
+	// 情境 A：格子是空的，且目前有選中的牌 -> 放上去
+	if (slot.childElementCount === 0 && selectedCardEl) {
+		const { val, isRed } = selectedCardData;
+		const isJoker = val.includes('Joker');
+		
+		const newCard = document.createElement('div');
+		newCard.className = "card" + (isRed ? " red" : "") + (isJoker ? " joker" : "");
+		newCard.innerText = isJoker ? "🃏" : val;
+		newCard.setAttribute('data-origin-id', selectedCardEl.id);
+	
+		slot.innerHTML = "";
+		slot.appendChild(newCard);
+	
+		// 隱藏原手牌並清除選取狀態
+		selectedCardEl.style.visibility = "hidden";
+		selectedCardEl.style.pointerEvents = "none";
+		cancelSelection();
+		
+		updateProgress();
+	} 
+	// 情境 B：格子已經有牌 -> 收回手牌 (維持原本點擊收回的邏輯)
+	else if (slot.childElementCount > 0) {
+		returnCard(slot);
+	}
+	}
 
     // 點擊手牌：填入格子
     function selectCard(cardEl, val, isRed) {
