@@ -133,23 +133,23 @@
 
   <div class="board">
     <div class="row" id="top-row">
-      <div class="slot" onclick="returnCard(this)">頭</div>
-      <div class="slot" onclick="returnCard(this)">頭</div>
-      <div class="slot" onclick="returnCard(this)">頭</div>
+      <div class="slot" onclick="returnCard(this)">頭墩</div>
+      <div class="slot" onclick="returnCard(this)">頭墩</div>
+      <div class="slot" onclick="returnCard(this)">頭墩</div>
     </div>
     <div class="row" id="mid-row">
-      <div class="slot" onclick="returnCard(this)">中</div>
-      <div class="slot" onclick="returnCard(this)">中</div>
-      <div class="slot" onclick="returnCard(this)">中</div>
-      <div class="slot" onclick="returnCard(this)">中</div>
-      <div class="slot" onclick="returnCard(this)">中</div>
+      <div class="slot" onclick="returnCard(this)">中墩</div>
+      <div class="slot" onclick="returnCard(this)">中墩</div>
+      <div class="slot" onclick="returnCard(this)">中墩</div>
+      <div class="slot" onclick="returnCard(this)">中墩</div>
+      <div class="slot" onclick="returnCard(this)">中墩</div>
     </div>
     <div class="row" id="btm-row">
-      <div class="slot" onclick="returnCard(this)">底</div>
-      <div class="slot" onclick="returnCard(this)">底</div>
-      <div class="slot" onclick="returnCard(this)">底</div>
-      <div class="slot" onclick="returnCard(this)">底</div>
-      <div class="slot" onclick="returnCard(this)">底</div>
+      <div class="slot" onclick="returnCard(this)">尾墩</div>
+      <div class="slot" onclick="returnCard(this)">尾墩</div>
+      <div class="slot" onclick="returnCard(this)">尾墩</div>
+      <div class="slot" onclick="returnCard(this)">尾墩</div>
+      <div class="slot" onclick="returnCard(this)">尾墩</div>
     </div>
   </div>
 
@@ -159,70 +159,70 @@
   <button class="btn-submit" id="submit-btn" onclick="submitHand()" disabled>請完成理牌 (0/13)</button>
 
   <script>
-    // 預設 13 張測試牌組
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbx8yw4qbP6r91ugCf5qAz5NdpW0tJgPDvDLkdyCClxWmn1qOCy422Fr2M3ccH_0paff/exec";
+    const LIFF_ID = "2009545022-2sIcehrG";
     const demoCards = ["♠A", "♥K", "♣Q", "♦J", "♠10", "♥9", "♣8", "♦7", "♠6", "♥5", "♣4", "♦3", "♠2"];
-    
-    function breakout() {
-      // 透過開啟新視窗或嘗試頂層重導向
-      window.open(window.location.href, '_top');
-    }
 
     async function main() {
-  const info = document.getElementById('player-info');
+      const info = document.getElementById('player-info');
+      
+      console.log("LIFF 開始初始化...");
   
-  // 1. 在 GitHub Pages 環境下，移除原本的 iframe-fix 判斷，直接 init
-  console.log("LIFF 開始初始化...");
-  
-  try {
-    await liff.init({ liffId: "2009545022-2sIcehrG" });
+      try {
+        await liff.init({ liffId: LIFF_ID });
     
-    if (!liff.isLoggedIn()) {
-      liff.login();
-      return;
-    }
-
-    const profile = await liff.getProfile();
-    info.innerText = "玩家：" + profile.displayName;
-
-    // 2. 向 GAS 請求真實手牌 (替換原本的 demoCards)
-    // 請將下方的 URL 替換成你 GAS 的正式部署網址 (以 /exec 結尾)
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbx8yw4qbP6r91ugCf5qAz5NdpW0tJgPDvDLkdyCClxWmn1qOCy422Fr2M3ccH_0paff/exec";
-    
-    info.innerText = "正在從試算表讀取手牌...";
-    
-    fetch(`${GAS_URL}?action=getCards&uid=${profile.userId}`)
-      .then(response => response.json())
-      .then(cards => {
-        if (cards && cards.length > 0) {
-          info.innerText = "玩家：" + profile.displayName;
-          renderHand(cards);
-        } else {
-          info.innerText = "玩家：" + profile.displayName + " (尚未發牌，顯示測試牌)";
-          renderHand(demoCards);
+        if (!liff.isLoggedIn()) {
+          liff.login();
+          return;
         }
-      })
-      .catch(err => {
-        console.error("讀取失敗:", err);
-        info.innerText = "讀取失敗，顯示測試牌";
-        renderHand(demoCards);
-      });
 
-  } catch (err) {
-    info.innerText = "初始化失敗: " + err.code + " / " + err.message;
-  }
-}
+        const profile = await liff.getProfile();
+        info.innerText = "正在從試算表讀取手牌...";
+    
+        fetch(`${GAS_URL}?action=getCards&uid=${profile.userId}`)
+          .then(response => response.json())
+          .then(cards => {
+            if (cards && cards.length > 0) {
+              info.innerText = "玩家：" + profile.displayName;
+              renderHand(cards);
+            } else {
+              info.innerText = "玩家：" + profile.displayName + " (尚未發牌，顯示測試牌)";
+              renderHand(demoCards);
+            }
+          })
+          .catch(err => {
+            console.error("讀取失敗:", err);
+            info.innerText = "讀取失敗，顯示測試牌";
+            renderHand(demoCards);
+          });
+
+      } catch (err) {
+        info.innerText = "初始化失敗: " + err.code + " / " + err.message;
+      }
+    }
 
     // 生成手牌按鈕
     function renderHand(cards) {
       const handDiv = document.getElementById('hand');
+      if (!handDiv) return;
       handDiv.innerHTML = "";
+
       cards.forEach((card, index) => {
-        const isRed = card.includes('♥') || card.includes('♦');
+        // 1. 判斷是否為鬼牌
+        const isJoker = card.includes('Joker');
+        // 2. 判斷顏色
+        const isRed = isJoker ? card.includes('Red') : (card.includes('♥') || card.includes('♦'));
+        
         const div = document.createElement('div');
-        div.className = "card" + (isRed ? " red" : "");
-        div.innerText = card;
+        
+        // 3. 設定樣式類別
+        div.className = "card" + (isRed ? " red" : "") + (isJoker ? " joker" : "");
+        
+        // 4. 設定顯示文字 (鬼牌顯示 Emoji，紅鬼顯示紅色，黑鬼顯示黑色)
+        div.innerText = isJoker ? "🃏" : card; 
+        
         div.id = "h-card-" + index; // 唯一ID
-        div.onclick = () => selectCard(div, card, isRed);
+        div.onclick = () => selectCard(div, card, isRed); // 點擊時傳入原始值 (如 Joker_Red)
         handDiv.appendChild(div);
       });
     }
@@ -232,9 +232,13 @@
       const slots = document.querySelectorAll('.slot');
       for (let slot of slots) {
         if (slot.childElementCount === 0) { // 找空格
+          const isJoker = val.includes('Joker');
           const newCard = document.createElement('div');
-          newCard.className = "card" + (isRed ? " red" : "");
-          newCard.innerText = val;
+          
+          // 同步加入紅黑顏色與 joker 類別
+          newCard.className = "card" + (isRed ? " red" : "") + (isJoker ? " joker" : "");
+          newCard.innerText = isJoker ? "🃏" : val; 
+          
           newCard.setAttribute('data-origin-id', cardEl.id);
           
           slot.innerHTML = ""; 
@@ -262,7 +266,7 @@
         
         // 還原提示文字
         const rowId = slot.parentElement.id;
-        slot.innerHTML = rowId.includes('top') ? "頭" : (rowId.includes('mid') ? "中" : "底");
+        slot.innerHTML = rowId.includes('top') ? "頭墩" : (rowId.includes('mid') ? "中墩" : "尾墩");
         updateProgress();
       }
     }
