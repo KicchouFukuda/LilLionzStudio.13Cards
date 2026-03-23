@@ -82,7 +82,6 @@
     }
 
     .card.selected {
-      transform: translateY(-15px); /* 往上浮起 */
       border: 2px solid #3498db;   /* 藍色邊框 */
       box-shadow: 0 5px 15px rgba(52, 152, 219, 0.5);
     }
@@ -195,8 +194,7 @@
               info.innerText = "玩家：" + profile.displayName;
               renderHand(cards);
             } else {
-              info.innerText = "玩家：" + profile.displayName + " (尚未發牌，顯示測試牌)";
-              renderHand(demoCards);
+              info.innerText = "牌局尚未開始";
             }
           })
           .catch(err => {
@@ -238,87 +236,60 @@
 
     // --- 動作 1：點擊手牌區的牌 ---
 	function selectCardFromHand(cardEl, val, isRed) {
-	// 如果點擊的是已經選中的牌，就取消選取
-	if (selectedCardEl === cardEl) {
-		cancelSelection();
-		return;
-	}
-	
-	// 先清除前一個選取狀態
-	if (selectedCardEl) {
-		selectedCardEl.classList.remove('selected');
-	}
-	
-	// 設定新的選取狀態
-	selectedCardEl = cardEl;
-	selectedCardData = { val, isRed };
-	cardEl.classList.add('selected');
-	
-	console.log("已選取:", val);
-	}
-	
-	// 取消選取的輔助函式
+		// 如果點擊的是已經選中的牌，就取消選取
+		if (selectedCardEl === cardEl) {
+			cancelSelection();
+			return;
+		}
+		
+		// 先清除前一個選取狀態
+		if (selectedCardEl) {
+			selectedCardEl.classList.remove('selected');
+		}
+		
+		// 設定新的選取狀態
+		selectedCardEl = cardEl;
+		selectedCardData = { val, isRed };
+		cardEl.classList.add('selected');
+		
+		console.log("已選取:", val);
+		}
+		
+		// 取消選取的輔助函式
 	function cancelSelection() {
-	if (selectedCardEl) {
-		selectedCardEl.classList.remove('selected');
-	}
-	selectedCardEl = null;
-	selectedCardData = null;
+		if (selectedCardEl) {
+			selectedCardEl.classList.remove('selected');
+		}
+		
+		selectedCardEl = null;
+		selectedCardData = null;
 	}
 	
 	// --- 動作 2：點擊理牌區的格子 (Slot) ---
 	function handleSlotClick(slot) {
-	// 情境 A：格子是空的，且目前有選中的牌 -> 放上去
-	if (slot.childElementCount === 0 && selectedCardEl) {
-		const { val, isRed } = selectedCardData;
-		const isJoker = val.includes('Joker');
+		if (slot.childElementCount === 0 && selectedCardEl) {
+			const { val, isRed } = selectedCardData;
+			const isJoker = val.includes('Joker');
+			
+			const newCard = document.createElement('div');
+			newCard.className = "card" + (isRed ? " red" : "") + (isJoker ? " joker" : "");
+			newCard.innerText = isJoker ? "🃏" : val;
+			newCard.setAttribute('data-origin-id', selectedCardEl.id);
 		
-		const newCard = document.createElement('div');
-		newCard.className = "card" + (isRed ? " red" : "") + (isJoker ? " joker" : "");
-		newCard.innerText = isJoker ? "🃏" : val;
-		newCard.setAttribute('data-origin-id', selectedCardEl.id);
-	
-		slot.innerHTML = "";
-		slot.appendChild(newCard);
-	
-		// 隱藏原手牌並清除選取狀態
-		selectedCardEl.style.visibility = "hidden";
-		selectedCardEl.style.pointerEvents = "none";
-		cancelSelection();
+			slot.innerHTML = "";
+			slot.appendChild(newCard);
 		
-		updateProgress();
-	} 
-	// 情境 B：格子已經有牌 -> 收回手牌 (維持原本點擊收回的邏輯)
-	else if (slot.childElementCount > 0) {
-		returnCard(slot);
+			// 隱藏原手牌並清除選取狀態
+			selectedCardEl.style.visibility = "hidden";
+			selectedCardEl.style.pointerEvents = "none";
+			cancelSelection();
+			
+			updateProgress();
+		} 
+		else if (slot.childElementCount > 0) {
+			returnCard(slot);
+		}
 	}
-	}
-
-    // 點擊手牌：填入格子
-    function selectCard(cardEl, val, isRed) {
-      const slots = document.querySelectorAll('.slot');
-      for (let slot of slots) {
-        if (slot.childElementCount === 0) { // 找空格
-          const isJoker = val.includes('Joker');
-          const newCard = document.createElement('div');
-          
-          // 同步加入紅黑顏色與 joker 類別
-          newCard.className = "card" + (isRed ? " red" : "") + (isJoker ? " joker" : "");
-          newCard.innerText = isJoker ? "🃏" : val; 
-          
-          newCard.setAttribute('data-origin-id', cardEl.id);
-          
-          slot.innerHTML = ""; 
-          slot.appendChild(newCard);
-          
-          cardEl.style.visibility = "hidden"; // 隱藏原牌，保持版面不跳動
-          cardEl.style.pointerEvents = "none";
-          
-          updateProgress();
-          break;
-        }
-      }
-    }
 
     // 點擊格子：退回手牌
     function returnCard(slot) {
@@ -331,7 +302,6 @@
           originalEl.style.pointerEvents = "auto";
         }
         
-        // 還原提示文字
         const rowId = slot.parentElement.id;
         slot.innerHTML = rowId.includes('top') ? "頭墩" : (rowId.includes('mid') ? "中墩" : "尾墩");
         updateProgress();
@@ -352,7 +322,7 @@
       try {
         await liff.sendMessages([{
           "type": "text",
-          "text": "🎴 我已完成理牌！\n結果：" + finalOrder.join(',')
+          "text": "🎴 我已完成理牌！"
         }]);
         liff.closeWindow();
       } catch (err) {
