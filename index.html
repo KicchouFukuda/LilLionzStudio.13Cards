@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>十三支</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    body {
+      font-family: -apple-system, sans-serif;
+      background: #2c3e50;
+      color: white;
+      margin: 0;
+      padding: 10px;
+      text-align: center;
+    }
+
+    h3 {
+      margin: 10px 0;
+      color: #f1c40f;
+    }
+
+    #player-info {
+      font-size: 13px;
+      margin-bottom: 15px;
+      color: #bdc3c7;
+    }
+
+    /* 3-5-5 棋盤佈局 */
+    .board {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 15px;
+    }
+
+    .row {
+      display: flex;
+      gap: 5px;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 8px;
+      border-radius: 8px;
+      width: 100%;
+      max-width: 320px;
+    }
+
+    /* 格子與卡片樣式 */
+    .slot {
+      width: 48px;
+      height: 68px;
+      border: 1px dashed #95a5a6;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: #7f8c8d;
+      cursor: pointer;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .card {
+      width: 48px;
+      height: 68px;
+      background: white;
+      color: black;
+      border-radius: 4px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 16px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .card.red {
+      color: #e74c3c;
+    }
+
+    /* 手牌待選區 */
+    .hand-area {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: center;
+      padding: 15px 5px;
+      border-top: 1px solid #34495e;
+      min-height: 160px;
+      margin-top: 10px;
+    }
+
+    /* 確認按鈕 */
+    .btn-submit {
+      background: #27ae60;
+      color: white;
+      border: none;
+      padding: 14px 0;
+      border-radius: 30px;
+      font-size: 18px;
+      margin: 15px 0;
+      width: 90%;
+      max-width: 280px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.2s;
+    }
+
+    .btn-submit:disabled {
+      background: #7f8c8d;
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-submit:active {
+      transform: scale(0.96);
+    }
+  </style>
+</head>
+
+<body>
+  <div id="iframe-fix" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#2c3e50; z-index:9999; flex-direction:column;  align-items:center; justify-content:center; padding:20px; text-align:center;">
+    <h3 style="color:#f1c40f;">確保遊戲順暢執行</h3>
+    <p>請點擊下方按鈕以啟用 LINE 登入功能</p>
+    <button onclick="breakout()" style="background:#27ae60; color:white; border:none; padding:15px 30px; border-radius:30px; font-size:18px; font-weight:bold;  cursor:pointer;">立即啟動遊戲</button>
+  </div>
+
+  <h3>🃏 十三支刁牌區</h3>
+  <div id="player-info">正在與 LINE 連線...</div>
+
+  <div class="board">
+    <div class="row" id="top-row">
+      <div class="slot" onclick="returnCard(this)">頭</div>
+      <div class="slot" onclick="returnCard(this)">頭</div>
+      <div class="slot" onclick="returnCard(this)">頭</div>
+    </div>
+    <div class="row" id="mid-row">
+      <div class="slot" onclick="returnCard(this)">中</div>
+      <div class="slot" onclick="returnCard(this)">中</div>
+      <div class="slot" onclick="returnCard(this)">中</div>
+      <div class="slot" onclick="returnCard(this)">中</div>
+      <div class="slot" onclick="returnCard(this)">中</div>
+    </div>
+    <div class="row" id="btm-row">
+      <div class="slot" onclick="returnCard(this)">底</div>
+      <div class="slot" onclick="returnCard(this)">底</div>
+      <div class="slot" onclick="returnCard(this)">底</div>
+      <div class="slot" onclick="returnCard(this)">底</div>
+      <div class="slot" onclick="returnCard(this)">底</div>
+    </div>
+  </div>
+
+  <div id="hand" class="hand-area">
+  </div>
+
+  <button class="btn-submit" id="submit-btn" onclick="submitHand()" disabled>請完成理牌 (0/13)</button>
+
+  <script>
+    // 預設 13 張測試牌組
+    const demoCards = ["♠A", "♥K", "♣Q", "♦J", "♠10", "♥9", "♣8", "♦7", "♠6", "♥5", "♣4", "♦3", "♠2"];
+    
+    function breakout() {
+      // 透過開啟新視窗或嘗試頂層重導向
+      window.open(window.location.href, '_top');
+    }
+
+    async function main() {
+      const info = document.getElementById('player-info');
+      const fixLayer = document.getElementById('iframe-fix');
+      
+      if (window.location.hostname.includes('googleusercontent.com')) {
+        fixLayer.style.display = 'flex';
+        info.innerText = "請點擊按鈕跳脫框架";
+        return; 
+      }
+      
+      if (window.self !== window.top) {
+        info.innerText = "等待頂層網頁重新載入";
+        window.top.location.href = window.location.href;
+        return; // 停止執行後續程式碼，等待頂層網頁重新載入
+      }
+  
+      console.log("LIFF 開始初始化...");
+      info.innerText = "狀態 1: 腳本啟動";
+
+      if (typeof liff === 'undefined') {
+        info.innerText = "錯誤: 找不到 LINE SDK，請檢查網路或 script 標籤";
+        return;
+      }
+
+      info.innerText = "狀態 2: 準備 init...";
+      
+      const forceShow = setTimeout(() => {
+        if (document.getElementById('player-info').innerText === "正在與 LINE 連線...") {
+          // document.getElementById('player-info').innerText = "連線逾時 (強制預覽模式)";
+          // renderHand(demoCards);
+        }
+      }, 10000);
+    
+      try {
+        await liff.init({ 
+          liffId: "2009545022-2sIcehrG" 
+        }).then(() => {
+          info.innerText = "狀態 3: init 成功！";
+          // 檢查登入
+          if (!liff.isLoggedIn()) {
+            info.innerText = "狀態 4: 導向登入...";
+            liff.login();
+          } else {
+            info.innerText = "狀態 5: 已登入，抓取資料...";
+            return liff.getProfile();
+          }
+        }).then(profile => {
+          if (profile) {
+            info.innerText = "玩家：" + profile.displayName;
+            renderHand(demoCards);
+          }
+        });
+      } catch (err) {
+        info.innerText = "初始化崩潰: " + err.code + " / " + err.message;
+      }
+    }
+
+    // 生成手牌按鈕
+    function renderHand(cards) {
+      const handDiv = document.getElementById('hand');
+      handDiv.innerHTML = "";
+      cards.forEach((card, index) => {
+        const isRed = card.includes('♥') || card.includes('♦');
+        const div = document.createElement('div');
+        div.className = "card" + (isRed ? " red" : "");
+        div.innerText = card;
+        div.id = "h-card-" + index; // 唯一ID
+        div.onclick = () => selectCard(div, card, isRed);
+        handDiv.appendChild(div);
+      });
+    }
+
+    // 點擊手牌：填入格子
+    function selectCard(cardEl, val, isRed) {
+      const slots = document.querySelectorAll('.slot');
+      for (let slot of slots) {
+        if (slot.childElementCount === 0) { // 找空格
+          const newCard = document.createElement('div');
+          newCard.className = "card" + (isRed ? " red" : "");
+          newCard.innerText = val;
+          newCard.setAttribute('data-origin-id', cardEl.id);
+          
+          slot.innerHTML = ""; 
+          slot.appendChild(newCard);
+          
+          cardEl.style.visibility = "hidden"; // 隱藏原牌，保持版面不跳動
+          cardEl.style.pointerEvents = "none";
+          
+          updateProgress();
+          break;
+        }
+      }
+    }
+
+    // 點擊格子：退回手牌
+    function returnCard(slot) {
+      const cardInside = slot.querySelector('.card');
+      if (cardInside) {
+        const originId = cardInside.getAttribute('data-origin-id');
+        const originalEl = document.getElementById(originId);
+        if (originalEl) {
+          originalEl.style.visibility = "visible";
+          originalEl.style.pointerEvents = "auto";
+        }
+        
+        // 還原提示文字
+        const rowId = slot.parentElement.id;
+        slot.innerHTML = rowId.includes('top') ? "頭" : (rowId.includes('mid') ? "中" : "底");
+        updateProgress();
+      }
+    }
+
+    function updateProgress() {
+      const filled = document.querySelectorAll('.slot .card').length;
+      const btn = document.getElementById('submit-btn');
+      btn.disabled = (filled !== 13);
+      btn.innerText = (filled === 13) ? "確認送出牌型" : `請完成理牌 (${filled}/13)`;
+    }
+
+    async function submitHand() {
+      const finalOrder = [];
+      document.querySelectorAll('.slot .card').forEach(c => finalOrder.push(c.innerText));
+      
+      try {
+        await liff.sendMessages([{
+          "type": "text",
+          "text": "🎴 我已完成理牌！\n結果：" + finalOrder.join(',')
+        }]);
+        liff.closeWindow();
+      } catch (err) {
+        alert("傳送失敗，請確認 Scopes 權限：" + err.message);
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", main);
+  </script>
+</body>
+
+</html>
