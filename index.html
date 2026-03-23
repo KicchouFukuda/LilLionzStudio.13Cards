@@ -168,61 +168,49 @@
     }
 
     async function main() {
-      const info = document.getElementById('player-info');
-      const fixLayer = document.getElementById('iframe-fix');
-      
-      if (window.location.hostname.includes('googleusercontent.com')) {
-        fixLayer.style.display = 'flex';
-        info.innerText = "請點擊按鈕跳脫框架";
-        return; 
-      }
-      
-      if (window.self !== window.top) {
-        info.innerText = "等待頂層網頁重新載入";
-        window.top.location.href = window.location.href;
-        return; // 停止執行後續程式碼，等待頂層網頁重新載入
-      }
+  const info = document.getElementById('player-info');
   
-      console.log("LIFF 開始初始化...");
-      info.innerText = "狀態 1: 腳本啟動";
-
-      if (typeof liff === 'undefined') {
-        info.innerText = "錯誤: 找不到 LINE SDK，請檢查網路或 script 標籤";
-        return;
-      }
-
-      info.innerText = "狀態 2: 準備 init...";
-      
-      const forceShow = setTimeout(() => {
-        if (document.getElementById('player-info').innerText === "正在與 LINE 連線...") {
-          // document.getElementById('player-info').innerText = "連線逾時 (強制預覽模式)";
-          // renderHand(demoCards);
-        }
-      }, 10000);
+  // 1. 在 GitHub Pages 環境下，移除原本的 iframe-fix 判斷，直接 init
+  console.log("LIFF 開始初始化...");
+  
+  try {
+    await liff.init({ liffId: "2009545022-2sIcehrG" });
     
-      try {
-        await liff.init({ 
-          liffId: "2009545022-2sIcehrG" 
-        }).then(() => {
-          info.innerText = "狀態 3: init 成功！";
-          // 檢查登入
-          if (!liff.isLoggedIn()) {
-            info.innerText = "狀態 4: 導向登入...";
-            liff.login();
-          } else {
-            info.innerText = "狀態 5: 已登入，抓取資料...";
-            return liff.getProfile();
-          }
-        }).then(profile => {
-          if (profile) {
-            info.innerText = "玩家：" + profile.displayName;
-            renderHand(demoCards);
-          }
-        });
-      } catch (err) {
-        info.innerText = "初始化崩潰: " + err.code + " / " + err.message;
-      }
+    if (!liff.isLoggedIn()) {
+      liff.login();
+      return;
     }
+
+    const profile = await liff.getProfile();
+    info.innerText = "玩家：" + profile.displayName;
+
+    // 2. 向 GAS 請求真實手牌 (替換原本的 demoCards)
+    // 請將下方的 URL 替換成你 GAS 的正式部署網址 (以 /exec 結尾)
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbx8yw4qbP6r91ugCf5qAz5NdpW0tJgPDvDLkdyCClxWmn1qOCy422Fr2M3ccH_0paff/exec";
+    
+    info.innerText = "正在從試算表讀取手牌...";
+    
+    fetch(`${GAS_URL}?action=getCards&uid=${profile.userId}`)
+      .then(response => response.json())
+      .then(cards => {
+        if (cards && cards.length > 0) {
+          info.innerText = "玩家：" + profile.displayName;
+          renderHand(cards);
+        } else {
+          info.innerText = "玩家：" + profile.displayName + " (尚未發牌，顯示測試牌)";
+          renderHand(demoCards);
+        }
+      })
+      .catch(err => {
+        console.error("讀取失敗:", err);
+        info.innerText = "讀取失敗，顯示測試牌";
+        renderHand(demoCards);
+      });
+
+  } catch (err) {
+    info.innerText = "初始化失敗: " + err.code + " / " + err.message;
+  }
+}
 
     // 生成手牌按鈕
     function renderHand(cards) {
