@@ -196,8 +196,7 @@
           })
           .catch(err => {
             console.error("讀取失敗:", err);
-            info.innerText = "讀取失敗，顯示測試牌";
-            renderHand(demoCards);
+            info.innerText = `讀取失敗，顯示測試牌${groupId}`;
           });
 
       } catch (err) {
