@@ -336,19 +336,21 @@ function renderHand(cards) {
 	}
 
     // 點擊格子：退回手牌
-function returnCard(slot) {
-  const cardInside = slot.querySelector('.card');
-  if (cardInside) {
-    // 清除格子的內容
-    const rowId = slot.parentElement.id;
-    slot.innerHTML = rowId.includes('top') ? "頭墩" : (rowId.includes('mid') ? "中墩" : "尾墩");
-    
-    // 關鍵：重新呼叫 renderHand，它會自動檢查哪些牌該顯示
-    renderHand(currentRawCards);
-    updateProgress();
-    cancelSelection();
-  }
-}
+    function returnCard(slot) {
+      const cardInside = slot.querySelector('.card');
+      if (cardInside) {
+        const originId = cardInside.getAttribute('data-origin-id');
+        const originalEl = document.getElementById(originId);
+        if (originalEl) {
+          originalEl.style.visibility = "visible";
+          originalEl.style.pointerEvents = "auto";
+        }
+        
+        const rowId = slot.parentElement.id;
+        slot.innerHTML = rowId.includes('top') ? "頭墩" : (rowId.includes('mid') ? "中墩" : "尾墩");
+        updateProgress();
+      }
+    }
 	
 	function getCardWeight(card) {
       const suits = { '♠': 1, '♥': 2, '♦': 3, '♣': 4 };
