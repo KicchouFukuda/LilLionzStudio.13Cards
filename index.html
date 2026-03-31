@@ -196,6 +196,8 @@
 	let currentRawCards = [];
 	let currentSortMode = 'suit';
 
+	let cardsInSlots = [];
+
     async function main() {
       const info = document.getElementById('player-info');
       
@@ -236,31 +238,45 @@
       }
     }
 
-    // 生成手牌按鈕
-    function renderHand(cards) {
-      const handDiv = document.getElementById('hand');
-      if (!handDiv) return;
-      handDiv.innerHTML = "";
+	  
+function renderHand(cards) {
+  const handDiv = document.getElementById('hand');
+  if (!handDiv) return;
+  handDiv.innerHTML = "";
+
+  // 1. 取得目前所有在 slot 裡的 card 的原始值 (data-val)
+  const usedCards = Array.from(document.querySelectorAll('.slot .card'))
+                         .map(c => c.getAttribute('data-val'));
+
+  // 2. 執行排序
+  const sortedCards = sortCards(cards, currentSortMode);
+
+  // 3. 渲染
+  sortedCards.forEach((card, index) => {
+    // 檢查這張牌是否已經被使用了（處理重複牌組邏輯）
+    const useCount = usedCards.filter(c => c === card).length;
+    const currentCardInstances = sortedCards.slice(0, index + 1).filter(c => c === card).length;
     
-      const cardsInSlots = Array.from(document.querySelectorAll('.slot .card')).map(c => c.getAttribute('data-val'));
+    // 如果這張牌的實例已經被放上去了，就隱藏它
+    const isUsed = currentCardInstances <= useCount;
+
+    const isJoker = card.includes('Joker');
+    const isRed = isJoker ? card.includes('Red') : (card.includes('♥') || card.includes('♦'));
     
-      const sortedCards = sortCards(cards, currentSortMode);
+    const div = document.createElement('div');
+    div.className = "card" + (isRed ? " red" : "") + (isJoker ? " joker" : "");
+    div.innerText = isJoker ? "🃏" : card;
+    div.setAttribute('data-val', card); // 儲存原始字串
     
-      sortedCards.forEach((card, index) => {
-        const isJoker = card.includes('Joker');
-        const isRed = isJoker ? card.includes('Red') : (card.includes('♥') || card.includes('♦'));
-        
-        const div = document.createElement('div');
-        div.className = "card" + (isRed ? " red" : "") + (isJoker ? " joker" : "");
-        div.innerText = isJoker ? "🃏" : card;
-        
-        div.id = "h-card-" + index; 
-        div.setAttribute('data-val', card); // 新增屬性紀錄原始值
-        
-        div.onclick = () => selectCardFromHand(div, card, isRed);
-        handDiv.appendChild(div);
-      });
+    // 如果已被使用，則不顯示
+    if (isUsed) {
+      div.style.display = "none";
     }
+
+    div.onclick = () => selectCardFromHand(div, card, isRed);
+    handDiv.appendChild(div);
+  });
+}
 
     // --- 動作 1：點擊手牌區的牌 ---
 	function selectCardFromHand(cardEl, val, isRed) {
@@ -320,28 +336,26 @@
 	}
 
     // 點擊格子：退回手牌
-    function returnCard(slot) {
-      const cardInside = slot.querySelector('.card');
-      if (cardInside) {
-        const originId = cardInside.getAttribute('data-origin-id');
-        const originalEl = document.getElementById(originId);
-        if (originalEl) {
-          originalEl.style.visibility = "visible";
-          originalEl.style.pointerEvents = "auto";
-        }
-        
-        const rowId = slot.parentElement.id;
-        slot.innerHTML = rowId.includes('top') ? "頭墩" : (rowId.includes('mid') ? "中墩" : "尾墩");
-        updateProgress();
-      }
-    }
+function returnCard(slot) {
+  const cardInside = slot.querySelector('.card');
+  if (cardInside) {
+    // 清除格子的內容
+    const rowId = slot.parentElement.id;
+    slot.innerHTML = rowId.includes('top') ? "頭墩" : (rowId.includes('mid') ? "中墩" : "尾墩");
+    
+    // 關鍵：重新呼叫 renderHand，它會自動檢查哪些牌該顯示
+    renderHand(currentRawCards);
+    updateProgress();
+    cancelSelection();
+  }
+}
 	
 	function getCardWeight(card) {
-      const suits = { '♠': 4, '♥': 3, '♦': 2, '♣': 1 };
-      const ranks = { '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '10': 10, 'J': 11, 'Q': 12, 'K': 13, 'A': 14 };
+      const suits = { '♠': 1, '♥': 2, '♦': 3, '♣': 4 };
+      const ranks = { 'A': 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '10': 10, 'J': 11, 'Q': 12, 'K': 13,  };
       
       if (card.includes('Joker')) {
-        return { suit: 5, rank: 15, isJoker: true }; // 鬼牌最高
+        return { suit: 5, rank: 14, isJoker: true }; // 鬼牌最高
       }
       
       const suitIcon = card.substring(0, 1);
@@ -360,13 +374,12 @@
         const wb = getCardWeight(b);
         
         if (mode === 'suit') {
-          // 依花色排序：先比花色，同花色再比點數
           if (wa.suit !== wb.suit) return wa.suit - wb.suit;
           return wa.rank - wb.rank;
         } else {
           // 依點數排序：先比點數，同點數再比花色
-          if (wa.rank !== wb.rank) return wb.rank - wa.rank; // 點數由大到小
-          return wb.suit - wa.suit; // 同點數時花色由大到小 (黑桃>紅心...)
+          if (wa.rank !== wb.rank) return wa.rank - wb.rank; // 點數由大到小
+          return wa.suit - wb.suit; // 同點數時花色由大到小 (黑桃>紅心...)
         }
       });
     }
