@@ -127,14 +127,8 @@
 </head>
 
 <body>
-  <div id="iframe-fix" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#2c3e50; z-index:9999; flex-direction:column;  align-items:center; justify-content:center; padding:20px; text-align:center;">
-    <h3 style="color:#f1c40f;">確保遊戲順暢執行</h3>
-    <p>請點擊下方按鈕以啟用 LINE 登入功能</p>
-    <button onclick="breakout()" style="background:#27ae60; color:white; border:none; padding:15px 30px; border-radius:30px; font-size:18px; font-weight:bold;  cursor:pointer;">立即啟動遊戲</button>
-  </div>
-
   <h3>🃏 十三支刁牌區</h3>
-  <div id="player-info">正在與 LINE 連線...</div>
+  <div id="player-info">正在連線...</div>
 
   <div class="board">
     <div class="row" id="top-row">
@@ -185,9 +179,12 @@
         }
 
         const profile = await liff.getProfile();
-        info.innerText = "正在從試算表讀取手牌...";
+        info.innerText = "正在取得手牌資訊...";
+
+		const urlParams = new URLSearchParams(window.location.search);
+		const groupId = urlParams.get('groupId');
     
-        fetch(`${GAS_URL}?action=getCards&uid=${profile.userId}`)
+        fetch(`${GAS_URL}?action=getCards&uid=${profile.userId}&groupId=${groupId}`)
           .then(response => response.json())
           .then(cards => {
             if (cards && cards.length > 0) {
@@ -322,7 +319,7 @@
       try {
         await liff.sendMessages([{
           "type": "text",
-          "text": "🎴 我已完成理牌！"
+          "text": "我已完成刁牌！"
         }]);
         liff.closeWindow();
       } catch (err) {
