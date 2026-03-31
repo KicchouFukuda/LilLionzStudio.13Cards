@@ -311,46 +311,48 @@ function renderHand(cards) {
 	
 	// --- 動作 2：點擊理牌區的格子 (Slot) ---
 	function handleSlotClick(slot) {
-		if (slot.childElementCount === 0 && selectedCardEl) {
-			const { val, isRed } = selectedCardData;
-			const isJoker = val.includes('Joker');
-			
-			const newCard = document.createElement('div');
-			newCard.className = "card" + (isRed ? " red" : "") + (isJoker ? " joker" : "");
-			newCard.innerText = isJoker ? "🃏" : val;
-			newCard.setAttribute('data-origin-id', selectedCardEl.id);
-		
-			slot.innerHTML = "";
-			slot.appendChild(newCard);
-		
-			// 隱藏原手牌並清除選取狀態
-			selectedCardEl.style.visibility = "hidden";
-			selectedCardEl.style.pointerEvents = "none";
-			cancelSelection();
-			
-			updateProgress();
-		} 
-		else if (slot.childElementCount > 0) {
-			returnCard(slot);
-		}
-	}
+  // 狀況 A：格子是空的，且玩家有選一張牌
+  if (slot.childElementCount === 0 && selectedCardEl) {
+    const { val, isRed } = selectedCardData;
+    const isJoker = val.includes('Joker');
+    
+    const newCard = document.createElement('div');
+    newCard.className = "card" + (isRed ? " red" : "") + (isJoker ? " joker" : "");
+    newCard.innerText = isJoker ? "🃏" : val;
+    
+    // 重要：把原始資料存入 data-val，這樣 renderHand 才抓得到它
+    newCard.setAttribute('data-val', val); 
+    
+    slot.innerHTML = "";
+    slot.appendChild(newCard);
+
+    // 清除選取狀態
+    cancelSelection();
+    
+    // 重點：直接重新渲染手牌區，它會自動隱藏已經進格子的牌
+    renderHand(currentRawCards); 
+    updateProgress();
+  } 
+  // 狀況 B：格子裡已經有牌，玩家點擊是要「退回手牌」
+  else if (slot.childElementCount > 0) {
+    returnCard(slot);
+  }
+}
 
     // 點擊格子：退回手牌
     function returnCard(slot) {
-      const cardInside = slot.querySelector('.card');
-      if (cardInside) {
-        const originId = cardInside.getAttribute('data-origin-id');
-        const originalEl = document.getElementById(originId);
-        if (originalEl) {
-          originalEl.style.visibility = "visible";
-          originalEl.style.pointerEvents = "auto";
-        }
-        
-        const rowId = slot.parentElement.id;
-        slot.innerHTML = rowId.includes('top') ? "頭墩" : (rowId.includes('mid') ? "中墩" : "尾墩");
-        updateProgress();
-      }
-    }
+  const cardInside = slot.querySelector('.card');
+  if (cardInside) {
+    // 清除格子的內容
+    const rowId = slot.parentElement.id;
+    slot.innerHTML = rowId.includes('top') ? "頭墩" : (rowId.includes('mid') ? "中墩" : "尾墩");
+    
+    // 關鍵：重新呼叫 renderHand，它會自動檢查哪些牌該顯示
+    renderHand(currentRawCards);
+    updateProgress();
+    cancelSelection();
+  }
+}
 	
 	function getCardWeight(card) {
       const suits = { '♠': 1, '♥': 2, '♦': 3, '♣': 4 };
