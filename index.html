@@ -123,11 +123,40 @@
     .btn-submit:active {
       transform: scale(0.96);
     }
+
+	.sort-controls {
+	  display: flex;
+	  justify-content: center;
+	  gap: 10px;
+	  margin-bottom: 10px;
+	}
+	
+	.btn-sort {
+	  background: #34495e;
+	  color: #bdc3c7;
+	  border: 1px solid #7f8c8d;
+	  padding: 5px 12px;
+	  border-radius: 15px;
+	  font-size: 12px;
+	  cursor: pointer;
+	}
+	
+	.btn-sort.active {
+	  background: #f1c40f;
+	  color: #2c3e50;
+	  border-color: #f1c40f;
+	  font-weight: bold;
+	}
   </style>
 </head>
 
 <body>
   <h3>🃏 十三支刁牌區</h3>
+  <div class="sort-controls">
+  	<button onclick="changeSort('suit')" id="btn-sort-suit" class="btn-sort active">依花色排序</button>
+  	<button onclick="changeSort('rank')" id="btn-sort-rank" class="btn-sort">依點數排序</button>
+  </div>
+	
   <div id="player-info">正在連線...</div>
 
   <div class="board">
@@ -160,10 +189,12 @@
   <script>
     const GAS_URL = "https://script.google.com/macros/s/AKfycbx8yw4qbP6r91ugCf5qAz5NdpW0tJgPDvDLkdyCClxWmn1qOCy422Fr2M3ccH_0paff/exec";
     const LIFF_ID = "2009545022-2sIcehrG";
-    const demoCards = ["♠A", "♥K", "♣Q", "♦J", "♠10", "♥9", "♣8", "♦7", "♠6", "♥5", "♣4", "♦3", "♠2"];
 
     let selectedCardData = null;
     let selectedCardEl = null;
+	
+	let currentRawCards = [];
+	let currentSortMode = 'suit';
 
     async function main() {
       const info = document.getElementById('player-info');
@@ -188,15 +219,16 @@
           .then(response => response.json())
           .then(cards => {
             if (cards && cards.length > 0) {
-              info.innerText = "玩家：" + profile.displayName;
-              renderHand(cards);
+              currentRawCards = cards;
+			  info.innerText = "玩家：" + profile.displayName;
+			  renderHand(currentRawCards);
             } else {
               info.innerText = "牌局尚未開始";
             }
           })
           .catch(err => {
             console.error("讀取失敗:", err);
-            info.innerText = `讀取失敗，顯示測試牌${groupId}`;
+            info.innerText = "讀取失敗。";
           });
 
       } catch (err) {
@@ -209,23 +241,23 @@
       const handDiv = document.getElementById('hand');
       if (!handDiv) return;
       handDiv.innerHTML = "";
-
-      cards.forEach((card, index) => {
-        // 1. 判斷是否為鬼牌
+    
+      const cardsInSlots = Array.from(document.querySelectorAll('.slot .card')).map(c => c.getAttribute('data-val'));
+    
+      const sortedCards = sortCards(cards, currentSortMode);
+    
+      sortedCards.forEach((card, index) => {
         const isJoker = card.includes('Joker');
-        // 2. 判斷顏色
         const isRed = isJoker ? card.includes('Red') : (card.includes('♥') || card.includes('♦'));
         
         const div = document.createElement('div');
-        
-        // 3. 設定樣式類別
         div.className = "card" + (isRed ? " red" : "") + (isJoker ? " joker" : "");
+        div.innerText = isJoker ? "🃏" : card;
         
-        // 4. 設定顯示文字 (鬼牌顯示 Emoji，紅鬼顯示紅色，黑鬼顯示黑色)
-        div.innerText = isJoker ? "🃏" : card; 
+        div.id = "h-card-" + index; 
+        div.setAttribute('data-val', card); // 新增屬性紀錄原始值
         
-        div.id = "h-card-" + index; // 唯一ID
-        div.onclick = () => selectCardFromHand(div, card, isRed); // 點擊時傳入原始值 (如 Joker_Red)
+        div.onclick = () => selectCardFromHand(div, card, isRed);
         handDiv.appendChild(div);
       });
     }
@@ -303,6 +335,51 @@
         updateProgress();
       }
     }
+	
+	function getCardWeight(card) {
+      const suits = { '♠': 4, '♥': 3, '♦': 2, '♣': 1 };
+      const ranks = { '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '10': 10, 'J': 11, 'Q': 12, 'K': 13, 'A': 14 };
+      
+      if (card.includes('Joker')) {
+        return { suit: 5, rank: 15, isJoker: true }; // 鬼牌最高
+      }
+      
+      const suitIcon = card.substring(0, 1);
+      const rankStr = card.substring(1);
+      
+      return {
+        suit: suits[suitIcon] || 0,
+        rank: ranks[rankStr] || 0,
+        isJoker: false
+      };
+    }
+	
+	function sortCards(cards, mode) {
+      return [...cards].sort((a, b) => {
+        const wa = getCardWeight(a);
+        const wb = getCardWeight(b);
+        
+        if (mode === 'suit') {
+          // 依花色排序：先比花色，同花色再比點數
+          if (wa.suit !== wb.suit) return wa.suit - wb.suit;
+          return wa.rank - wb.rank;
+        } else {
+          // 依點數排序：先比點數，同點數再比花色
+          if (wa.rank !== wb.rank) return wb.rank - wa.rank; // 點數由大到小
+          return wb.suit - wa.suit; // 同點數時花色由大到小 (黑桃>紅心...)
+        }
+      });
+    }
+	
+	function changeSort(mode) {
+		currentSortMode = mode;
+		// 切換按鈕樣式
+		document.getElementById('btn-sort-suit').classList.toggle('active', mode === 'suit');
+		document.getElementById('btn-sort-rank').classList.toggle('active', mode === 'rank');
+		
+		// 重新渲染（僅針對還在手牌區的牌）
+		renderHand(currentRawCards);
+	}
 
     function updateProgress() {
       const filled = document.querySelectorAll('.slot .card').length;
