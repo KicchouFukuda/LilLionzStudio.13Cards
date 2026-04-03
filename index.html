@@ -202,7 +202,7 @@
         async function main() {
             const info = document.getElementById('player-info');
 
-            console.log("LIFF 開始初始化... Ver 1.1.0");
+            console.log("LIFF 開始初始化... Ver 1.2.0");
 
             try {
                 await liff.init({ liffId: LIFF_ID });
@@ -447,8 +447,9 @@
             if (!cards || cards.length === 0) return { level: 0, name: "無", text: "" };
 
             console.log(cards);
-            console.log(isTop);
+            console.log(cards.length);
             const isTop = (cards.length === 3); // 是否為頭墩
+            console.log(isTop);
             const jokerCount = cards.filter(c => c.includes('Joker')).length;
             const normalCards = cards.filter(c => !c.includes('Joker'));
 
