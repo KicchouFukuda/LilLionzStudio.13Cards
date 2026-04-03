@@ -415,6 +415,10 @@
             const mid = analyzeHand(midCards);
             const btm = analyzeHand(btmCards);
 
+            console.log(`${top.name}、${top.level}、${top.score}、${top.text}`);
+            console.log(`${mid.name}、${mid.level}、${mid.score}、${mid.text}`);
+            console.log(`${btm.name}、${btm.level}、${btm.score}、${btm.text}`);
+
             if (top.score > mid.score) {
                 alert(`擺牌錯誤！\n頭墩 [${top.name}] 不能大於 中墩 [${mid.name}]`);
                 return;
@@ -438,9 +442,7 @@
                 alert("傳送失敗，請確認 Scopes 權限：" + err.message);
             }
         }
-
-
-
+        
         function analyzeHand(cards) {
             if (!cards || cards.length === 0) return { level: 0, name: "無", text: "" };
 
