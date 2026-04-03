@@ -202,7 +202,7 @@
         async function main() {
             const info = document.getElementById('player-info');
 
-            console.log("LIFF 開始初始化...");
+            console.log("LIFF 開始初始化... Ver 1.0.0");
 
             try {
                 await liff.init({ liffId: LIFF_ID });
@@ -514,6 +514,7 @@
             return normalCards.every(c => {
                 const result = c.startsWith(firstSuit);
                 console.log(`${c}:${result}`);
+                return result;
             });
         }
 
