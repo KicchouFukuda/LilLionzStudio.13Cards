@@ -2,449 +2,454 @@
 <html>
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>十三支</title>
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <style>
-    body {
-      font-family: -apple-system, sans-serif;
-      background: #2c3e50;
-      color: white;
-      margin: 0;
-      padding: 10px;
-      text-align: center;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>十三支</title>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, sans-serif;
+            background: #2c3e50;
+            color: white;
+            margin: 0;
+            padding: 10px;
+            text-align: center;
+        }
 
-    h3 {
-      margin: 10px 0;
-      color: #f1c40f;
-    }
+        h3 {
+            margin: 10px 0;
+            color: #f1c40f;
+        }
 
-    #player-info {
-      font-size: 13px;
-      margin-bottom: 15px;
-      color: #bdc3c7;
-    }
+        #player-info {
+            font-size: 13px;
+            margin-bottom: 15px;
+            color: #bdc3c7;
+        }
 
-    /* 3-5-5 棋盤佈局 */
-    .board {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 15px;
-    }
+        /* 3-5-5 棋盤佈局 */
+        .board {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
 
-    .row {
-      display: flex;
-      gap: 5px;
-      justify-content: center;
-      background: rgba(0, 0, 0, 0.3);
-      padding: 8px;
-      border-radius: 8px;
-      width: 100%;
-      max-width: 320px;
-    }
+        .row {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 8px;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 320px;
+        }
 
-    /* 格子與卡片樣式 */
-    .slot {
-      width: 48px;
-      height: 68px;
-      border: 1px dashed #95a5a6;
-      border-radius: 4px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 11px;
-      color: #7f8c8d;
-      cursor: pointer;
-      background: rgba(255, 255, 255, 0.05);
-    }
+        /* 格子與卡片樣式 */
+        .slot {
+            width: 48px;
+            height: 68px;
+            border: 1px dashed #95a5a6;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            color: #7f8c8d;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.05);
+        }
 
-    .card {
-      width: 48px;
-      height: 68px;
-      background: white;
-      color: black;
-      border-radius: 4px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      font-size: 16px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-    }
+        .card {
+            width: 48px;
+            height: 68px;
+            background: white;
+            color: black;
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
 
-    .card.red {
-      color: #e74c3c;
-    }
+        .card.red {
+            color: #e74c3c;
+        }
 
-    .card.selected {
-      border: 2px solid #3498db;
-      /* 藍色邊框 */
-      box-shadow: 0 5px 15px rgba(52, 152, 219, 0.5);
-    }
+        .card.selected {
+            border: 2px solid #3498db;
+            /* 藍色邊框 */
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.5);
+        }
 
-    /* 手牌待選區 */
-    .hand-area {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      justify-content: center;
-      padding: 15px 5px;
-      border-top: 1px solid #34495e;
-      min-height: 160px;
-      margin-top: 10px;
-    }
+        /* 手牌待選區 */
+        .hand-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: center;
+            padding: 15px 5px;
+            border-top: 1px solid #34495e;
+            min-height: 160px;
+            margin-top: 10px;
+        }
 
-    /* 確認按鈕 */
-    .btn-submit {
-      background: #27ae60;
-      color: white;
-      border: none;
-      padding: 14px 0;
-      border-radius: 30px;
-      font-size: 18px;
-      margin: 15px 0;
-      width: 90%;
-      max-width: 280px;
-      cursor: pointer;
-      font-weight: bold;
-      transition: 0.2s;
-    }
+        /* 確認按鈕 */
+        .btn-submit {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 14px 0;
+            border-radius: 30px;
+            font-size: 18px;
+            margin: 15px 0;
+            width: 90%;
+            max-width: 280px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
 
-    .btn-submit:disabled {
-      background: #7f8c8d;
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
+        .btn-submit:disabled {
+            background: #7f8c8d;
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
 
-    .btn-submit:active {
-      transform: scale(0.96);
-    }
-  </style>
+        .btn-submit:active {
+            transform: scale(0.96);
+        }
+    </style>
 </head>
 
 <body>
-  <div id="iframe-fix"
-    style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#2c3e50; z-index:9999; flex-direction:column;  align-items:center; justify-content:center; padding:20px; text-align:center;">
-    <h3 style="color:#f1c40f;">確保遊戲順暢執行</h3>
-    <p>請點擊下方按鈕以啟用 LINE 登入功能</p>
-    <button onclick="breakout()"
-      style="background:#27ae60; color:white; border:none; padding:15px 30px; border-radius:30px; font-size:18px; font-weight:bold;  cursor:pointer;">立即啟動遊戲</button>
-  </div>
-
-  <h3>🃏 十三支刁牌區</h3>
-  <div id="player-info">正在與 LINE 連線...</div>
-
-  <div class="board">
-    <div class="row" id="top-row">
-      <div class="slot" onclick="handleSlotClick(this)">頭墩</div>
-      <div class="slot" onclick="handleSlotClick(this)">頭墩</div>
-      <div class="slot" onclick="handleSlotClick(this)">頭墩</div>
+    <div id="iframe-fix"
+        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#2c3e50; z-index:9999; flex-direction:column;  align-items:center; justify-content:center; padding:20px; text-align:center;">
+        <h3 style="color:#f1c40f;">確保遊戲順暢執行</h3>
+        <p>請點擊下方按鈕以啟用 LINE 登入功能</p>
+        <button onclick="breakout()"
+            style="background:#27ae60; color:white; border:none; padding:15px 30px; border-radius:30px; font-size:18px; font-weight:bold;  cursor:pointer;">立即啟動遊戲</button>
     </div>
-    <div class="row" id="mid-row">
-      <div class="slot" onclick="handleSlotClick(this)">中墩</div>
-      <div class="slot" onclick="handleSlotClick(this)">中墩</div>
-      <div class="slot" onclick="handleSlotClick(this)">中墩</div>
-      <div class="slot" onclick="handleSlotClick(this)">中墩</div>
-      <div class="slot" onclick="handleSlotClick(this)">中墩</div>
+
+    <h3>🃏 十三支刁牌區</h3>
+    <div id="player-info">正在與 LINE 連線...</div>
+
+    <div class="board">
+        <div class="row" id="top-row">
+            <div class="slot" onclick="handleSlotClick(this)">頭墩</div>
+            <div class="slot" onclick="handleSlotClick(this)">頭墩</div>
+            <div class="slot" onclick="handleSlotClick(this)">頭墩</div>
+        </div>
+        <div class="row" id="mid-row">
+            <div class="slot" onclick="handleSlotClick(this)">中墩</div>
+            <div class="slot" onclick="handleSlotClick(this)">中墩</div>
+            <div class="slot" onclick="handleSlotClick(this)">中墩</div>
+            <div class="slot" onclick="handleSlotClick(this)">中墩</div>
+            <div class="slot" onclick="handleSlotClick(this)">中墩</div>
+        </div>
+        <div class="row" id="btm-row">
+            <div class="slot" onclick="handleSlotClick(this)">尾墩</div>
+            <div class="slot" onclick="handleSlotClick(this)">尾墩</div>
+            <div class="slot" onclick="handleSlotClick(this)">尾墩</div>
+            <div class="slot" onclick="handleSlotClick(this)">尾墩</div>
+            <div class="slot" onclick="handleSlotClick(this)">尾墩</div>
+        </div>
     </div>
-    <div class="row" id="btm-row">
-      <div class="slot" onclick="handleSlotClick(this)">尾墩</div>
-      <div class="slot" onclick="handleSlotClick(this)">尾墩</div>
-      <div class="slot" onclick="handleSlotClick(this)">尾墩</div>
-      <div class="slot" onclick="handleSlotClick(this)">尾墩</div>
-      <div class="slot" onclick="handleSlotClick(this)">尾墩</div>
-    </div>
-  </div>
 
-  <div id="hand" class="hand-area" />
+    <div id="hand" class="hand-area" />
 
-  <button class="btn-submit" id="submit-btn" onclick="submitHand()" disabled>請完成理牌 (0/13)</button>
+    <button class="btn-submit" id="submit-btn" onclick="submitHand()" disabled>請完成理牌 (0/13)</button>
 
-  <script>
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbx8yw4qbP6r91ugCf5qAz5NdpW0tJgPDvDLkdyCClxWmn1qOCy422Fr2M3ccH_0paff/exec";
-    const LIFF_ID = "2009545022-2sIcehrG";
+    <script>
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbx8yw4qbP6r91ugCf5qAz5NdpW0tJgPDvDLkdyCClxWmn1qOCy422Fr2M3ccH_0paff/exec";
+        const LIFF_ID = "2009545022-2sIcehrG";
 
-    let selectedCardData = null;
-    let selectedCardEl = null;
+        let selectedCardData = null;
+        let selectedCardEl = null;
 
-    async function main() {
-      const info = document.getElementById('player-info');
+        async function main() {
+            const info = document.getElementById('player-info');
 
-      console.log("LIFF 開始初始化...");
+            console.log("LIFF 開始初始化...");
 
-      try {
-        await liff.init({ liffId: LIFF_ID });
+            try {
+                await liff.init({ liffId: LIFF_ID });
 
-        if (!liff.isLoggedIn()) {
-          liff.login();
-          return;
-        }
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                    return;
+                }
 
-        const profile = await liff.getProfile();
-        info.innerText = "正在從試算表讀取手牌...";
+                const profile = await liff.getProfile();
+                info.innerText = "正在從試算表讀取手牌...";
 
-        fetch(`${GAS_URL}?action=getCards&uid=${profile.userId}`)
-          .then(response => response.json())
-          .then(cards => {
-            if (cards && cards.length > 0) {
-              info.innerText = "玩家：" + profile.displayName;
-              renderHand(cards);
-            } else {
-              info.innerText = "牌局尚未開始";
+                fetch(`${GAS_URL}?action=getCards&uid=${profile.userId}`)
+                    .then(response => response.json())
+                    .then(cards => {
+                        if (cards && cards.length > 0) {
+                            info.innerText = "玩家：" + profile.displayName;
+                            renderHand(cards);
+                        } else {
+                            info.innerText = "牌局尚未開始";
+                        }
+                    })
+                    .catch(err => {
+                        console.error("讀取失敗:", err);
+                        info.innerText = "讀取失敗，顯示測試牌";
+                        renderHand(demoCards);
+                    });
+
+            } catch (err) {
+                info.innerText = "初始化失敗: " + err.code + " / " + err.message;
             }
-          })
-          .catch(err => {
-            console.error("讀取失敗:", err);
-            info.innerText = "讀取失敗，顯示測試牌";
-            renderHand(demoCards);
-          });
-
-      } catch (err) {
-        info.innerText = "初始化失敗: " + err.code + " / " + err.message;
-      }
-    }
-
-    // 生成手牌按鈕
-    function renderHand(cards) {
-      const handDiv = document.getElementById('hand');
-      if (!handDiv) return;
-      handDiv.innerHTML = "";
-
-      cards.forEach((card, index) => {
-        // 1. 判斷是否為鬼牌
-        const isJoker = card.includes('Joker');
-        // 2. 判斷顏色
-        const isRed = isJoker ? card.includes('Red') : (card.includes('♥') || card.includes('♦'));
-
-        const div = document.createElement('div');
-
-        // 3. 設定樣式類別
-        div.className = "card" + (isRed ? " red" : "") + (isJoker ? " joker" : "");
-
-        // 4. 設定顯示文字 (鬼牌顯示 Emoji，紅鬼顯示紅色，黑鬼顯示黑色)
-        div.innerText = isJoker ? "🃏" : card;
-
-        div.id = "h-card-" + index; // 唯一ID
-        div.onclick = () => selectCardFromHand(div, card, isRed); // 點擊時傳入原始值 (如 Joker_Red)
-        handDiv.appendChild(div);
-      });
-    }
-
-    // --- 動作 1：點擊手牌區的牌 ---
-    function selectCardFromHand(cardEl, val, isRed) {
-      // 如果點擊的是已經選中的牌，就取消選取
-      if (selectedCardEl === cardEl) {
-        cancelSelection();
-        return;
-      }
-
-      // 先清除前一個選取狀態
-      if (selectedCardEl) {
-        selectedCardEl.classList.remove('selected');
-      }
-
-      // 設定新的選取狀態
-      selectedCardEl = cardEl;
-      selectedCardData = { val, isRed };
-      cardEl.classList.add('selected');
-
-      console.log("已選取:", val);
-    }
-
-    // 取消選取的輔助函式
-    function cancelSelection() {
-      if (selectedCardEl) {
-        selectedCardEl.classList.remove('selected');
-      }
-
-      selectedCardEl = null;
-      selectedCardData = null;
-    }
-
-    // --- 動作 2：點擊理牌區的格子 (Slot) ---
-    function handleSlotClick(slot) {
-      if (slot.childElementCount === 0 && selectedCardEl) {
-        const { val, isRed } = selectedCardData;
-        const isJoker = val.includes('Joker');
-
-        const newCard = document.createElement('div');
-        newCard.className = "card" + (isRed ? " red" : "") + (isJoker ? " joker" : "");
-        newCard.innerText = isJoker ? "🃏" : val;
-        newCard.setAttribute('data-origin-id', selectedCardEl.id);
-
-        slot.innerHTML = "";
-        slot.appendChild(newCard);
-
-        // 隱藏原手牌並清除選取狀態
-        selectedCardEl.style.visibility = "hidden";
-        selectedCardEl.style.pointerEvents = "none";
-        cancelSelection();
-
-        updateProgress();
-      }
-      else if (slot.childElementCount > 0) {
-        returnCard(slot);
-      }
-    }
-
-    // 點擊格子：退回手牌
-    function returnCard(slot) {
-      const cardInside = slot.querySelector('.card');
-      if (cardInside) {
-        const originId = cardInside.getAttribute('data-origin-id');
-        const originalEl = document.getElementById(originId);
-        if (originalEl) {
-          originalEl.style.visibility = "visible";
-          originalEl.style.pointerEvents = "auto";
         }
 
-        const rowId = slot.parentElement.id;
-        slot.innerHTML = rowId.includes('top') ? "頭墩" : (rowId.includes('mid') ? "中墩" : "尾墩");
-        updateProgress();
-      }
-    }
+        // 生成手牌按鈕
+        function renderHand(cards) {
+            const handDiv = document.getElementById('hand');
+            if (!handDiv) return;
+            handDiv.innerHTML = "";
 
-    function updateProgress() {
-      const filled = document.querySelectorAll('.slot .card').length;
-      const btn = document.getElementById('submit-btn');
-      btn.disabled = (filled !== 13);
-      btn.innerText = (filled === 13) ? "確認送出牌型" : `請完成理牌 (${filled}/13)`;
-    }
+            cards.forEach((card, index) => {
+                // 1. 判斷是否為鬼牌
+                const isJoker = card.includes('Joker');
+                // 2. 判斷顏色
+                const isRed = isJoker ? card.includes('Red') : (card.includes('♥') || card.includes('♦'));
 
-    async function submitHand() {
-      const topCards = Array.from(document.querySelectorAll('#top-row .card')).map(c => c.getAttribute('data-val'));
-      const midCards = Array.from(document.querySelectorAll('#mid-row .card')).map(c => c.getAttribute('data-val'));
-      const btmCards = Array.from(document.querySelectorAll('#btm-row .card')).map(c => c.getAttribute('data-val'));
+                const div = document.createElement('div');
 
-      const top = analyzeHand(topCards);
-      const mid = analyzeHand(midCards);
-      const btm = analyzeHand(btmCards);
+                // 3. 設定樣式類別
+                div.className = "card" + (isRed ? " red" : "") + (isJoker ? " joker" : "");
 
-      if (top.level)
+                // 4. 設定顯示文字 (鬼牌顯示 Emoji，紅鬼顯示紅色，黑鬼顯示黑色)
+                div.innerText = isJoker ? "🃏" : card;
 
-        const finalOrder = [];
-      document.querySelectorAll('.slot .card').forEach(c => finalOrder.push(c.innerText));
-
-      try {
-        await liff.sendMessages([{
-          "type": "text",
-          "text": "🎴 我已完成理牌！"
-        }]);
-        liff.closeWindow();
-      } catch (err) {
-        alert("傳送失敗，請確認 Scopes 權限：" + err.message);
-      }
-    }
-
-    function analyzeHand(cards) {
-      if (!cards || cards.length === 0) return { level: 0, name: "無", text: "" };
-
-      const isTop = (cards.length === 3); // 是否為頭墩
-      const jokerCount = cards.filter(c => c.includes('Joker')).length;
-      const normalCards = cards.filter(c => !c.includes('Joker'));
-
-      // 1. 統計點數出現次數 (A=14, K=13...)
-      const rankMap = {};
-      const ranks = { 'A': 14, 'K': 13, 'Q': 12, 'J': 11, '10': 10, '9': 9, '8': 8, '7': 7, '6': 6, '5': 5, '4': 4, '3': 3, '2': 2 };
-
-      normalCards.forEach(c => {
-        const r = ranks[c.substring(1)];
-        rankMap[r] = (rankMap[r] || 0) + 1;
-      });
-
-      const sortedCounts = Object.entries(rankMap)
-        .map(([rank, count]) => ({ rank: parseInt(rank), count }))
-        .sort((a, b) => b.count - a.count || b.rank - a.rank);
-
-      // 取得最高張數 (考慮鬼牌)
-      const maxCount = (sortedCounts[0]?.count || 0) + jokerCount;
-
-      const getRankScore = (counts) => {
-        return counts.reduce((acc, cur, idx) => acc + (cur.rank * Math.pow(15, 4 - idx)), 0);
-      };
-
-      const mainRank = sortedCounts[0]?.rank || 0;
-      const secondRank = sortedCounts[1]?.rank || 0;
-
-      // --- 開始判定牌型 (由高至低) ---
-      if (isTop) {
-        if (maxCount === 5) return formatResult(10, "五枚", cards, (10 * 1e12) + (mainRank * 1e10));
-
-        const isFlush = checkIsFlush(normalCards);
-        const straightInfo = checkIsStraight(Object.keys(rankMap).map(Number), jokerCount);
-
-        if (isFlush && straightInfo) return formatResult(9, "同花順", cards, (9 * 1e12) + (straightInfo.maxRank * 1e10));
-        if (maxCount === 4) return formatResult(8, "鐵支", cards, (8 * 1e12) + (mainRank * 1e10) + secondRank);
-        if (maxCount === 3 && sortedCounts[1]?.count >= 2) return formatResult(7, "葫蘆", cards, (7 * 1e12) + (mainRank * 1e10) + secondRank);
-        if (isFlush) return formatResult(6, "同花", cards, (6 * 1e12) + (mainRank * 1e10));
-        if (straightInfo) return formatResult(5, "順子", cards, (5 * 1e12) + (straightInfo.maxRank * 1e10));
-      }
-
-      if (maxCount === 3) return formatResult(4, "三條", cards);
-      const pairCount = sortedCounts.filter(x => x.count === 2).length;
-      if (!isTop && (pairCount >= 2 || (pairCount === 1 && jokerCount >= 1))) return formatResult(3, "兩對", cards);
-      if (maxCount === 2) return formatResult(2, "對子", cards);
-      return formatResult(1, "烏龍", cards);
-    }
-
-    // 輔助：格式化輸出字串
-    function formatResult(level, name, cards, score) {
-      // 將 Joker 顯示為 🃏
-      const displayCards = cards.map(c => c.includes('Joker') ? '🃏' : c).join(',');
-      return {
-        level: level,
-        name: name,
-        score: score,
-        text: `${level}:${displayCards}`
-      };
-    }
-
-    // 輔助：檢查同花
-    function checkIsFlush(normalCards) {
-      if (normalCards.length === 0) return true;
-      const firstSuit = normalCards[0][0];
-      return normalCards.every(c => c[0] === firstSuit);
-    }
-
-    // 輔助：檢查順子 (含鬼牌補位)
-    function checkIsStraight(uniqueRanks, jokers) {
-      if (uniqueRanks.length === 0 || uniqueRanks.length + jokers < 5) return false;
-      uniqueRanks.sort((a, b) => a - b);
-
-      // 一般順子檢查
-      let needed = 0;
-      const min = uniqueRanks[0];
-      const max = uniqueRanks[uniqueRanks.length - 1];
-
-      // 跨度檢查
-      if (max - min >= 5) return false;
-
-      // 補位檢查
-      for (let i = min; i < min + 5; i++) {
-        if (!uniqueRanks.includes(i)) needed++;
-      }
-      if (needed <= jokers) return true;
-
-      // 特殊情況：A2345 (A 當 1 用)
-      if (uniqueRanks.includes(14)) {
-        const lowRanks = uniqueRanks.map(r => r === 14 ? 1 : r).sort((a, b) => a - b);
-        let lowNeeded = 0;
-        for (let i = 1; i <= 5; i++) {
-          if (!lowRanks.includes(i)) lowNeeded++;
+                div.id = "h-card-" + index; // 唯一ID
+                div.onclick = () => selectCardFromHand(div, card, isRed); // 點擊時傳入原始值 (如 Joker_Red)
+                handDiv.appendChild(div);
+            });
         }
-        if (lowNeeded <= jokers) return true;
-      }
 
-      return false;
-    }
+        // --- 動作 1：點擊手牌區的牌 ---
+        function selectCardFromHand(cardEl, val, isRed) {
+            // 如果點擊的是已經選中的牌，就取消選取
+            if (selectedCardEl === cardEl) {
+                cancelSelection();
+                return;
+            }
 
-    document.addEventListener("DOMContentLoaded", main);
-  </script>
+            // 先清除前一個選取狀態
+            if (selectedCardEl) {
+                selectedCardEl.classList.remove('selected');
+            }
+
+            // 設定新的選取狀態
+            selectedCardEl = cardEl;
+            selectedCardData = { val, isRed };
+            cardEl.classList.add('selected');
+
+            console.log("已選取:", val);
+        }
+
+        // 取消選取的輔助函式
+        function cancelSelection() {
+            if (selectedCardEl) {
+                selectedCardEl.classList.remove('selected');
+            }
+
+            selectedCardEl = null;
+            selectedCardData = null;
+        }
+
+        // --- 動作 2：點擊理牌區的格子 (Slot) ---
+        function handleSlotClick(slot) {
+            if (slot.childElementCount === 0 && selectedCardEl) {
+                const { val, isRed } = selectedCardData;
+                const isJoker = val.includes('Joker');
+
+                const newCard = document.createElement('div');
+                newCard.className = "card" + (isRed ? " red" : "") + (isJoker ? " joker" : "");
+                newCard.innerText = isJoker ? "🃏" : val;
+                newCard.setAttribute('data-origin-id', selectedCardEl.id);
+
+                slot.innerHTML = "";
+                slot.appendChild(newCard);
+
+                // 隱藏原手牌並清除選取狀態
+                selectedCardEl.style.visibility = "hidden";
+                selectedCardEl.style.pointerEvents = "none";
+                cancelSelection();
+
+                updateProgress();
+            }
+            else if (slot.childElementCount > 0) {
+                returnCard(slot);
+            }
+        }
+
+        // 點擊格子：退回手牌
+        function returnCard(slot) {
+            const cardInside = slot.querySelector('.card');
+            if (cardInside) {
+                const originId = cardInside.getAttribute('data-origin-id');
+                const originalEl = document.getElementById(originId);
+                if (originalEl) {
+                    originalEl.style.visibility = "visible";
+                    originalEl.style.pointerEvents = "auto";
+                }
+
+                const rowId = slot.parentElement.id;
+                slot.innerHTML = rowId.includes('top') ? "頭墩" : (rowId.includes('mid') ? "中墩" : "尾墩");
+                updateProgress();
+            }
+        }
+
+        function updateProgress() {
+            const filled = document.querySelectorAll('.slot .card').length;
+            const btn = document.getElementById('submit-btn');
+            btn.disabled = (filled !== 13);
+            btn.innerText = (filled === 13) ? "確認送出牌型" : `請完成理牌 (${filled}/13)`;
+        }
+
+        async function submitHand() {
+            const topCards = Array.from(document.querySelectorAll('#top-row .card')).map(c => c.getAttribute('data-val'));
+            const midCards = Array.from(document.querySelectorAll('#mid-row .card')).map(c => c.getAttribute('data-val'));
+            const btmCards = Array.from(document.querySelectorAll('#btm-row .card')).map(c => c.getAttribute('data-val'));
+
+            const top = analyzeHand(topCards);
+            const mid = analyzeHand(midCards);
+            const btm = analyzeHand(btmCards);
+
+            if (top.score > mid.score) {
+                alert(`擺牌錯誤！\n頭墩 [${top.name}] 不能大於 中墩 [${mid.name}]`);
+                return;
+            }
+
+            if (mid.score > btm.score) {
+                alert(`擺牌錯誤！\n中墩 [${mid.name}] 不能大於 尾墩 [${btn.name}]`);
+                return;
+            }
+
+            const finalOrder = [];
+            document.querySelectorAll('.slot .card').forEach(c => finalOrder.push(c.innerText));
+
+            try {
+                await liff.sendMessages([{
+                    "type": "text",
+                    "text": "我已完成刁牌！"
+                }]);
+                liff.closeWindow();
+            } catch (err) {
+                alert("傳送失敗，請確認 Scopes 權限：" + err.message);
+            }
+        }
+
+        function analyzeHand(cards) {
+            if (!cards || cards.length === 0) return { level: 0, name: "無", text: "" };
+
+            const isTop = (cards.length === 3); // 是否為頭墩
+            const jokerCount = cards.filter(c => c.includes('Joker')).length;
+            const normalCards = cards.filter(c => !c.includes('Joker'));
+
+            // 1. 統計點數出現次數 (A=14, K=13...)
+            const rankMap = {};
+            const ranks = { 'A': 14, 'K': 13, 'Q': 12, 'J': 11, '10': 10, '9': 9, '8': 8, '7': 7, '6': 6, '5': 5, '4': 4, '3': 3, '2': 2 };
+
+            normalCards.forEach(c => {
+                const r = ranks[c.substring(1)];
+                rankMap[r] = (rankMap[r] || 0) + 1;
+            });
+
+            const sortedCounts = Object.entries(rankMap)
+                .map(([rank, count]) => ({ rank: parseInt(rank), count }))
+                .sort((a, b) => b.count - a.count || b.rank - a.rank);
+
+            // 取得最高張數 (考慮鬼牌)
+            const maxCount = (sortedCounts[0]?.count || 0) + jokerCount;
+
+            const getRankScore = (counts) => {
+                return counts.reduce((acc, cur, idx) => acc + (cur.rank * Math.pow(15, 4 - idx)), 0);
+            };
+
+            const mainRank = sortedCounts[0]?.rank || 0;
+            const secondRank = sortedCounts[1]?.rank || 0;
+
+            // --- 開始判定牌型 (由高至低) ---
+            if (isTop) {
+                if (maxCount === 5) return formatResult(10, "五枚", cards, (10 * 1e12) + (mainRank * 1e10));
+
+                const isFlush = checkIsFlush(normalCards);
+                const straightInfo = checkIsStraight(Object.keys(rankMap).map(Number), jokerCount);
+
+                if (isFlush && straightInfo.isStraight) return formatResult(9, "同花順", cards, (9 * 1e12) + (straightInfo.maxRank * 1e10));
+                if (maxCount === 4) return formatResult(8, "鐵支", cards, (8 * 1e12) + (mainRank * 1e10));
+                if (maxCount === 3 && sortedCounts[1]?.count >= 2) return formatResult(7, "葫蘆", cards, (7 * 1e12) + (mainRank * 1e10));
+                if (isFlush) return formatResult(6, "同花", cards, (6 * 1e12) + (mainRank * 1e10));
+                if (straightInfo.isStraight) return formatResult(5, "順子", cards, (5 * 1e12) + (straightInfo.maxRank * 1e10));
+            }
+
+            if (maxCount === 3) return formatResult(4, "三條", cards, (4 * 1e12) + (mainRank * 1e10));
+            const pairCount = sortedCounts.filter(x => x.count === 2).length;
+            if (!isTop && (pairCount >= 2 || (pairCount === 1 && jokerCount >= 1))) return formatResult(3, "兩對", cards, (3 * 1e12) + (mainRank * 1e10) + (secondRank * 1e8));
+            if (maxCount === 2) return formatResult(2, "對子", cards, (2 * 1e12) + (mainRank * 1e10));
+            return formatResult(1, "烏龍", cards, (1 * 1e12) + sortedCounts.reduce((acc, cur, idx) => acc + (cur.rank * Math.pow(15, 4 - idx)), 0));
+        }
+
+        // 輔助：格式化輸出字串
+        function formatResult(level, name, cards, score) {
+            // 將 Joker 顯示為 🃏
+            const displayCards = cards.map(c => c.includes('Joker') ? '🃏' : c).join(',');
+            return {
+                level: level,
+                name: name,
+                score: score,
+                text: `${level}:${displayCards}`
+            };
+        }
+
+        // 輔助：檢查同花
+        function checkIsFlush(normalCards) {
+            if (normalCards.length === 0) return true;
+            const firstSuit = normalCards[0][0];
+            return normalCards.every(c => c[0] === firstSuit);
+        }
+
+        // 輔助：檢查順子 (含鬼牌補位)
+        function checkIsStraight(uniqueRanks, jokers) {
+            if (uniqueRanks.length === 0 || uniqueRanks.length + jokers < 5) return false;
+            uniqueRanks.sort((a, b) => a - b);
+
+            // 一般順子檢查
+            let needed = 0;
+            const min = uniqueRanks[0];
+            const max = uniqueRanks[uniqueRanks.length - 1];
+
+            if (max == 14) {
+                for (let i = 2; i <= 5; i++) {
+                    if (!uniqueRanks.includes(i)) needed++;
+                }
+
+                if (needed <= jokers) return { isStraight: true, maxRank: 5 };
+            }
+
+            if (max - min >= 5) return false;
+
+            for (let i = min; i < min + 5; i++) {
+                if (!uniqueRanks.includes(i)) needed++;
+            }
+
+            if (needed <= jokers) return { isStraight: true, maxRank: min + 4 };
+
+            return false;
+        }
+
+        document.addEventListener("DOMContentLoaded", main);
+    </script>
 </body>
 
 </html>
