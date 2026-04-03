@@ -545,6 +545,8 @@
             const min = uniqueRanks[0];
             const max = uniqueRanks[uniqueRanks.length - 1];
 
+            console.log(`min: ${min}、max ${max}`);
+
             if (max == 14) {
                 for (let i = 2; i <= 5; i++) {
                     if (!uniqueRanks.includes(i)) needed++;
@@ -556,8 +558,13 @@
             if (max - min >= 5) return false;
 
             for (let i = min; i < min + 5; i++) {
+                const result = !uniqueRanks.includes(i);
+                console.log(`rank: ${i}、result: ${result}`);
+
                 if (!uniqueRanks.includes(i)) needed++;
             }
+
+            console.log(`${needed}`);
 
             if (needed <= jokers) return { isStraight: true, maxRank: min + 4 };
 
