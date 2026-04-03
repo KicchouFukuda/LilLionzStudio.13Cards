@@ -508,9 +508,13 @@
 
         // 輔助：檢查同花
         function checkIsFlush(normalCards) {
-            if (normalCards.length === 0) return true;
-            const firstSuit = normalCards[0][0];
-            return normalCards.every(c => c[0] === firstSuit);
+            if (normalCards.length === 0) return false;
+            const firstSuit = normalCards[0].substring(0, 1);
+            console.log(`同花檢查，第一張的花色為: ${firstSuit}`);
+            return normalCards.every(c => {
+                const result = c.startsWith(firstSuit);
+                console.log(`${c}:${result}`);
+            });
         }
 
         // 輔助：檢查順子 (含鬼牌補位)
