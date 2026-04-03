@@ -205,7 +205,7 @@
         async function main() {
             const info = document.getElementById('player-info');
 
-            console.log("LIFF 開始初始化... Ver 1.4.0");
+            console.log("LIFF 開始初始化... Ver 1.5.0");
 
             try {
                 await liff.init({ liffId: LIFF_ID });
@@ -557,14 +557,11 @@
 
             if (max - min >= 5) return false;
 
-            for (let i = min; i < min + 5; i++) {
-                const result = !uniqueRanks.includes(i);
-                console.log(`rank: ${i}、result: ${result}`);
+            needed = 0;
 
+            for (let i = min; i < min + 5; i++) {
                 if (!uniqueRanks.includes(i)) needed++;
             }
-
-            console.log(`${needed}`);
 
             if (needed <= jokers) return { isStraight: true, maxRank: min + 4 };
 
