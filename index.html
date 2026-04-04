@@ -505,7 +505,7 @@
                 if (isFlush && straightInfo.isStraight) return formatResult(9, "同花順", cards, (9 * 1e12) + (straightInfo.maxRank * 1e10));
                 if (maxCount === 4) return formatResult(8, "鐵支", cards, (8 * 1e12) + (mainRank * 1e10));
                 if (maxCount === 3 && sortedCounts[1]?.count >= 2) return formatResult(7, "葫蘆", cards, (7 * 1e12) + (mainRank * 1e10));
-                if (isFlush) return formatResult(6, "同花", cards, (6 * 1e12) + (mainRank * 1e10));
+                if (isFlush) return formatResult(6, "同花", cards, (6 * 1e12) + (mainRank * 1e10) + sortedCounts.reduce((acc, cur, idx) => acc + (cur.rank * Math.pow(15, 4 - idx)), 0));
                 if (straightInfo.isStraight) return formatResult(5, "順子", cards, (5 * 1e12) + (straightInfo.maxRank * 1e10));
             }
 
